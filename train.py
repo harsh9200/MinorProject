@@ -1,9 +1,9 @@
 import time
 from utils import *
-from Losses import *
-from Config import CONFIG
-from Model import Unet
-from Dataset import prepare_dataloader
+from losses import *
+from config import CONFIG
+from model import Unet
+from dataset import prepare_dataloader
 
 import torch
 import torch.optim as optim

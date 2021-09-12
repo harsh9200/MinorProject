@@ -12,15 +12,7 @@ from albumentations import ShiftScaleRotate, Normalize, Resize, Compose
 
 
 
-def prepare_dataloader(
-    RLE_DF_PATH,
-    base_path,
-    phase,
-    fold=4,
-    total_folds=5,
-    batch_size=16,
-    num_workers=4,
-    ):
+def prepare_dataloader(RLE_DF_PATH, base_path, phase, fold=4, total_folds=5, batch_size=16, num_workers=4):
     RLE_DF_ALL = pd.read_csv(RLE_DF_PATH)
     
     #? Rename Column Names
