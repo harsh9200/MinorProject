@@ -33,13 +33,12 @@ class Parameter:
 
     @property
     def rand_val(self) -> Union[int, float]:
-        ''' Returns a random value X in range [min_val, max_val] using the
+        """Returns a random value X in range [min_val, max_val] using the
         equation:
         
         X = min_val + μ * (max_val - min_val)
-        
-        where, µ = random number that falls in [0, 1].
-        '''
+            where, µ = random number that falls in [0, 1].
+        """
 
         return self._dtype(self._min_val + uniform(0, 1) * (self._max_val - self._min_val))
 

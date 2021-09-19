@@ -1,6 +1,7 @@
+from .bee import Bee
 from bisect import bisect
 from random import randint, random
-from .bee import Bee
+
 
 def apply_mutation(curr_params: list, all_params: list) -> list:
     ''' apply_mutation: alters the value of one parameter in supplied list of
@@ -18,20 +19,25 @@ def apply_mutation(curr_params: list, all_params: list) -> list:
     return new_params
 
 
-def call_obj_fn(params: list, obj_fn: callable, obj_fn_args: dict) -> tuple:
-    ''' call_obj_fn: calls supplied objective function, evaluating using
-    supplied parameters; callable in single- and multi-processed configurations
+def call_objective_fn(params: list, 
+                      obj_fn: callable, 
+                      obj_fn_args: dict
+                      ) -> tuple:
+    """Calls supplied objective function, evaluating using input parameters; 
+        callable in single- and multi-processed configurations
+    
     Args:
         params (list): list of ints or floats corresponding to current bee
-            parameter values
-        obj_fn (callable): function to accept list of paramters, returns a
-            quantitative measurement of fitness
-        obj_fn_args (dict): non-tunable kwargs to pass to objective function
+            parameter values.
+        obj_fn (callable): Function to accept list of paramters, returns a
+            quantitative measurement of fitness.
+        obj_fn_args (dict): Non-Tunable Kwargs to pass to objective function.
+    
     Returns:
         tuple: (params, objective function return value)
-    '''
+    """
 
-    return (params, obj_fn(params, **obj_fn_args))
+    return params, obj_fn(params, **obj_fn_args)
 
 
 def choose_bee(bees: list) -> Bee:

@@ -5,22 +5,26 @@ from typing import Callable, Any, Union
 
 from .bee import Bee
 from .parameter import Parameter
-from .utils import apply_mutation, call_obj_fn, choose_bee, determine_best_bee
+from .utils import apply_mutation, call_objective_fn, choose_bee, determine_best_bee
 
 
 class ABC:
-
     def __init__(self, num_employers: int,
-                 objective_fn: Callable[[list], float], obj_fn_args: dict = {},
-                 num_processes: int = 1):
-        ''' ABC object: optimizes parameters for user-supplied function
+                 objective_fn: Callable[[list], float], 
+                 obj_fn_args: dict = {},
+                 num_processes: int = 1
+                 ):
+        """Artificial Bee Colony Optimization
+        
         Args:
-            num_employers (int): number of employer bees in the colony
-            objective_fn (callable): function to optimize; accepts list of
-                ints/floats, returns float (fitness)
-            obj_fn_args (dict): non-tunable kwargs to pass to objective_fn
-            num_processes (int): number of concurrent processes to utilize
-        '''
+            num_employers (int): Number of employer bees in the colony.
+            objective_fn (Callable[[list], float]): Function to Optimize.
+            obj_fn_args (dict, optional): Non-Tunable Kwargs to pass to objective_fn.
+            num_processes (int, optional): Number of concurrent processes to utilize.
+
+        Raises:
+            ReferenceError: If Obective Function is not callable.
+        """
 
         if not callable(objective_fn):
             raise ReferenceError('Supplied objective function not callable')
@@ -33,19 +37,22 @@ class ABC:
 
     @property
     def best_fitness(self) -> float:
-        ''' Returns fitness score from best-performing bee '''
+        """Returns fitness score from best-performing bee
+        """
 
         return determine_best_bee(self._bees)[0]
 
     @property
     def best_ret_val(self) -> Union[int, float]:
-        ''' Returns objective_fn return value from best-performing bee '''
+        """Returns objective_fn return value from best-performing bee 
+        """
 
         return determine_best_bee(self._bees)[1]
 
     @property
     def best_params(self) -> dict:
-        ''' Returns parameters from best-performing bee '''
+        """Returns parameters from best-performing bee 
+        """
 
         vals = determine_best_bee(self._bees)[2]
         ret_val = {}
@@ -72,29 +79,34 @@ class ABC:
             return None
         return (sum(b._obj_fn_val for b in self._bees) / len(self._bees))
 
-    def add_param(self, min_val: Union[int, float], max_val: Union[int, float],
-                  restrict: bool = True, name: str = None):
-        ''' ABC.add_param: adds a parameter to be processed by the user-
-        supplied objective function
+    def add_param(self, min_val: Union[int, float], 
+                  max_val: Union[int, float],
+                  restrict: bool = True, 
+                  parameter_name: str = None
+                  ):
+        """ABC.add_param: adds a parameter to be processed by the user-
+        supplied objective function.
+        
         Args:
             min_val (int, float): minimum value allowed for the parameter's
-                initialization
+                initialization.
             max_val (int, float): maximum value allowed for the parameter's
-                initialization
+                initialization.
             restrict (bool): if `True`, parameter mutations must be within
                 [min_val, max_val], `False` allows out-of-bounds mutation
-            name (str): name of parameter, optional
-        '''
+            parameter_name (str): Name of parameter, optional.
+        """
 
         if len(self._bees) > 0:
             raise RuntimeError(
                 'Cannot add another parameter after bee initialization'
             )
-        self._params.append(Parameter(min_val, max_val, restrict, name))
+        
+        self._params.append(Parameter(min_val, max_val, restrict, parameter_name))
 
     def initialize(self):
-        ''' ABC.initialize: creates `num_employers` employer bees and `num_employers` onlooker bees
-        '''
+        """ABC.initialize: creates `num_employers` employer bees and `num_employers` onlooker bees
+        """
 
         if len(self._bees) > 0:
             warn('initialize() called again: overwriting bee population', RuntimeWarning)
@@ -106,15 +118,14 @@ class ABC:
         employer_results = []
 
         for _ in range(self._num_employers):
-            
             #? Get Random value of each parameter
             params = [p.rand_val for p in self._params]
             if self._num_processes > 1:
                 employer_results.append(employer_pool.apply_async(
-                    call_obj_fn, [params, self._obj_fn, self._obj_fn_args]
+                    call_objective_fn, [params, self._obj_fn, self._obj_fn_args]
                 ))
             else:
-                employer_results.append(call_obj_fn(
+                employer_results.append(call_objective_fn(
                     params, self._obj_fn, self._obj_fn_args
                 ))
 
@@ -140,7 +151,6 @@ class ABC:
             neighbor_food = apply_mutation(
                 chosen_employer._params, self._params
             )
-
             if self._num_processes > 1:
                 onlooker_results.append(onlooker_pool.apply_async(
                     call_obj_fn,
@@ -152,13 +162,11 @@ class ABC:
                 ))
 
         if self._num_processes > 1:
-
             onlooker_pool.close()
             onlooker_pool.join()
             onlooker_results = [r.get() for r in onlooker_results]
 
         for result in onlooker_results:
-
             self._bees.append(Bee(
                 result[0],
                 result[1],
